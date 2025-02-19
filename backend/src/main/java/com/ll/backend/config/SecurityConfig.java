@@ -2,6 +2,7 @@ package com.ll.backend.config;
 
 import com.ll.backend.jwt.JwtFilter;
 import com.ll.backend.jwt.JwtUtil;
+import com.ll.backend.jwt.LoginFilter;
 import com.ll.backend.oauth2.CustomSuccessHandler;
 import com.ll.backend.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final AuthenticationConfiguration authenticationConfiguration;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JwtUtil jwtUtil;
@@ -36,6 +38,12 @@ public class SecurityConfig {
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
 
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+
+        return configuration.getAuthenticationManager();
     }
 
     @Bean
@@ -67,7 +75,10 @@ public class SecurityConfig {
                 // HTTP Basic 인증 비활성화: JWT를 사용하므로 Basic 인증은 사용하지 않음
                 .httpBasic(AbstractHttpConfigurer::disable)
                 // JwtFilter를 추가하여 JWT 인증 처리
-//                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new JwtFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class)
+                // LoginFilter를 추가하여 로그인 처리
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class)
+
                 // OAuth 2.0 로그인 시 사용되는 서비스 설정
                 // 1. userInfoEndpoint(): OAuth 2.0 공급자로부터 사용자 정보를 가져오는 엔드포인트를 구성.
                 // 2. userService(customOAuth2UserService):

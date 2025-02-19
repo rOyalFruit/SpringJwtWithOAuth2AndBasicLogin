@@ -26,6 +26,15 @@ public class JwtFilter extends OncePerRequestFilter {
         //cookie들을 불러온 뒤 Authorization Key에 담긴 쿠키를 찾음
         String authorization = null;
         Cookie[] cookies = request.getCookies();
+
+        if (authorization == null || cookies == null) {
+
+            System.out.println("token null");
+            filterChain.doFilter(request, response);
+
+            return;
+        }
+
         for (Cookie cookie : cookies) {
 
             System.out.println(cookie.getName());
@@ -33,15 +42,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 authorization = cookie.getValue();
             }
-        }
-
-        //Authorization 헤더 검증
-        if (authorization == null) {
-
-            System.out.println("token null");
-            filterChain.doFilter(request, response);
-
-            return;
         }
 
         //토큰
