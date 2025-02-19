@@ -1,5 +1,6 @@
 package com.ll.backend.config;
 
+import com.ll.backend.oauth2.CustomSuccessHandler;
 import com.ll.backend.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ import java.util.Collections;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomSuccessHandler customSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -57,7 +59,8 @@ public class SecurityConfig {
                 //    - 이 서비스에서 소셜 로그인 후의 사용자 정보 처리 로직을 구현
                 .oauth2Login((oauth2) -> oauth2
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
-                                .userService(customOAuth2UserService)))
+                                .userService(customOAuth2UserService))
+                        .successHandler(customSuccessHandler))
                 // 경로별 인가 작업
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/", "/h2-console/**").permitAll()
