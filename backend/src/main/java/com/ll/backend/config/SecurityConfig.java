@@ -77,7 +77,7 @@ public class SecurityConfig {
                 // JwtFilter를 추가하여 JWT 인증 처리
                 .addFilterAfter(new JwtFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class)
                 // LoginFilter를 추가하여 로그인 처리
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class)
 
                 // OAuth 2.0 로그인 시 사용되는 서비스 설정
                 // 1. userInfoEndpoint(): OAuth 2.0 공급자로부터 사용자 정보를 가져오는 엔드포인트를 구성.
