@@ -1,11 +1,14 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
+import AuthSuccess from './components/AuthSuccess.js';
 
 const onNaverLogin = () => {
-  window.location.href = "http://localhost:8080/oauth2/authorization/naver"
+    window.location.href = "http://localhost:8080/oauth2/authorization/naver"
 }
 
 const onGoogleLogin = () => {
-  window.location.href = "http://localhost:8080/oauth2/authorization/google"
+    window.location.href = "http://localhost:8080/oauth2/authorization/google"
 }
 
 const onKakaoLogin = () => {
@@ -25,14 +28,21 @@ const getData = () => {
 }
 
 function App() {
-  return (
-      <>
-        <button onClick={onNaverLogin}>Naver Login</button>
-        <button onClick={onGoogleLogin}>Google Login</button>
-        <button onClick={onKakaoLogin}>Kakao Login</button>
-        <button onClick={getData}>Get Data</button>
-      </>
-  )
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={
+                    <>
+                        <button onClick={onNaverLogin}>Naver Login</button>
+                        <button onClick={onGoogleLogin}>Google Login</button>
+                        <button onClick={onKakaoLogin}>Kakao Login</button>
+                        <button onClick={getData}>Get Data</button>
+                    </>
+                } />
+                <Route path="/auth-success" element={<AuthSuccess />} />
+            </Routes>
+        </Router>
+    )
 }
 
 export default App;

@@ -38,7 +38,13 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String token = jwtUtil.createJwt(username, role, 60*60*60L);
 
         response.addCookie(createCookie("Authorization", token));
-        response.sendRedirect("http://localhost:3000/");
+        // response.addHeader로 발급을 진행하면 하이퍼 링크로 받을 수 없음.
+        // 첫 발급 이후에는 헤더로 JWT를 이동 시킬 수 있으므로 아래 로직을 이용
+        // 1. 로그인 성공 쿠키로 발급
+        // 2. 프론트의 특정 페이지로 리디렉션을 보냄 (현재 단계)
+        // 3. 프론트의 특정 페이지는 axios를 통해 쿠키를(credentials=true)를 가지고 다시 백엔드로 접근하여 헤더로 JWT를 받아옴
+        // 4. 헤더로 받아온 JWT를 로컬 스토리지등에 보관하여 사용
+        response.sendRedirect("http://localhost:3000/auth-success");
     }
 
     private Cookie createCookie(String key, String value) {
