@@ -9,11 +9,16 @@ const onGoogleLogin = () => {
   window.location.href = "http://localhost:8080/oauth2/authorization/google"
 }
 
+const onKakaoLogin = () => {
+    window.location.href = "http://localhost:8080/oauth2/authorization/kakao"
+}
+
 function App() {
   return (
       <>
         <button onClick={onNaverLogin}>Naver Login</button>
         <button onClick={onGoogleLogin}>Google Login</button>
+        <button onClick={onKakaoLogin}>Kakao Login</button>
       </>
   )
 }

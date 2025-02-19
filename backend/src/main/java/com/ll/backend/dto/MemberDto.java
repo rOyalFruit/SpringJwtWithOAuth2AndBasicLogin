@@ -12,4 +12,6 @@ public class MemberDto {
     private String name;
 
     private String username;
+
+    private String profileImageUrl;
 }
