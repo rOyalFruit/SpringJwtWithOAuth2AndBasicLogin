@@ -1,5 +1,7 @@
 package com.ll.backend.config;
 
+import com.ll.backend.jwt.JwtFilter;
+import com.ll.backend.jwt.JwtUtil;
 import com.ll.backend.oauth2.CustomSuccessHandler;
 import com.ll.backend.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -22,6 +25,7 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
+    private final JwtUtil jwtUtil;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -51,6 +55,8 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 // HTTP Basic 인증 비활성화: JWT를 사용하므로 Basic 인증은 사용하지 않음
                 .httpBasic(AbstractHttpConfigurer::disable)
+                // JwtFilter를 추가하여 JWT 인증 처리
+                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
                 // OAuth 2.0 로그인 시 사용되는 서비스 설정
                 // 1. userInfoEndpoint(): OAuth 2.0 공급자로부터 사용자 정보를 가져오는 엔드포인트를 구성.
                 // 2. userService(customOAuth2UserService):
