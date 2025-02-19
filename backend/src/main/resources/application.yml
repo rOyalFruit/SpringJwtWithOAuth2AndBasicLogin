@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: backend  # 애플리케이션의 이름을 'backend'로 설정.
+
+  h2:
+    console:
+      enabled: 'true'    # H2 데이터베이스의 웹 콘솔을 활성화.
+      path: /h2-console  # H2 콘솔에 접근할 수 있는 경로를 '/h2-console'로 설정.
+
+  datasource:
+    url: jdbc:h2:./db_dev;MODE=MySQL  # H2 데이터베이스의 URL을 설정. 파일 기반 데이터베이스를 사용하며, MySQL 모드로 실행.
+    driverClassName: org.h2.Driver    # H2 데이터베이스 드라이버 클래스를 지정.
+    username: sa                      # 데이터베이스 접속 사용자 이름 설정.
+    password:                         # 데이터베이스 접속 비밀번호 설정.
+
+  jpa:
+    hibernate:
+      ddl-auto: update                            # 데이터베이스 스키마 자동 생성 전략을 'update'로 설정. 기존 테이블은 유지하고 변경사항만 적용함.
+    properties:
+      hibernate:
+        show_sql: true                            # SQL 쿼리를 콘솔에 출력.
+        format_sql: true                          # 출력되는 SQL 쿼리를 보기 좋게 포맷팅.
+        dialect: org.hibernate.dialect.H2Dialect  # H2 데이터베이스에 맞는 Hibernate 방언(Dialect)을 설정.
