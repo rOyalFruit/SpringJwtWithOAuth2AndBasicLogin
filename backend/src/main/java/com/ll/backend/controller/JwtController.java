@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
@@ -22,7 +23,8 @@ import java.util.Date;
 @RequiredArgsConstructor
 @Tag(name = "JwtController", description = "JWT 관련 컨트롤러")
 @SecurityRequirement(name = "bearerAuth")
-@RestController("/jwt")
+@RequestMapping(("/jwt"))
+@RestController
 public class JwtController {
 
     private final JwtUtil jwtUtil;

@@ -8,7 +8,7 @@ const AuthSuccess = () => {
     useEffect(() => {
         const fetchJWT = async () => {
             try {
-                const response = await axios.get('http://localhost:8080/cookie-to-header', {
+                const response = await axios.get('http://localhost:8080/jwt/cookie-to-header', {
                     withCredentials: true
                 });
 
