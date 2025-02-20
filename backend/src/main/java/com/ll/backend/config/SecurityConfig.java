@@ -1,5 +1,6 @@
 package com.ll.backend.config;
 
+import com.ll.backend.jwt.CustomLogoutFilter;
 import com.ll.backend.jwt.JwtFilter;
 import com.ll.backend.jwt.JwtUtil;
 import com.ll.backend.jwt.LoginFilter;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -83,6 +85,7 @@ public class SecurityConfig {
                                 jwtUtil,
                                 refreshRepository),
                         UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class)
                 // OAuth 2.0 로그인 시 사용되는 서비스 설정
                 // 1. userInfoEndpoint(): OAuth 2.0 공급자로부터 사용자 정보를 가져오는 엔드포인트를 구성.
                 // 2. userService(customOAuth2UserService):
