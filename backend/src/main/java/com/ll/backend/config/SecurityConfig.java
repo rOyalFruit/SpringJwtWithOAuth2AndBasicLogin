@@ -90,7 +90,8 @@ public class SecurityConfig {
                         .successHandler(customSuccessHandler))
                 // 경로별 인가 작업
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/h2-console/**", "/login", "/join", "cookie-to-header").permitAll()
+                        .requestMatchers("/", "/login", "/join", "cookie-to-header").permitAll()
+                        .requestMatchers("/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 // X-Frame-Options 헤더 설정: H2 콘솔 접근을 위해 SAMEORIGIN으로 설정
