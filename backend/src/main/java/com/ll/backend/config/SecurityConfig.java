@@ -90,7 +90,7 @@ public class SecurityConfig {
                         .successHandler(customSuccessHandler))
                 // 경로별 인가 작업
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/login", "/join", "cookie-to-header").permitAll()
+                        .requestMatchers("/", "/login", "/join", "/jwt/**").permitAll()
                         .requestMatchers("/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
