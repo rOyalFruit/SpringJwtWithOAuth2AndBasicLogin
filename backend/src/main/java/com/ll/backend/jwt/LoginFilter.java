@@ -2,9 +2,11 @@ package com.ll.backend.jwt;
 
 import com.ll.backend.dto.CustomUserDetails;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -49,10 +51,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 60*1000L);
+        String accessToken = jwtUtil.createJwt("access", username, role, 60*10*1000L);      // 엑세스 토큰 만료기간: 10분
+        String refreshToken = jwtUtil.createJwt("refresh", username, role, 60*60*24*1000L); // 리프레시 토큰 만료기간: 24시간
 
-        // HTTP 인증 방식은 RFC 7235 정의에 따라 아래 인증 헤더 형태를 가져야 함.
-        response.addHeader("Authorization", "Bearer " + token);
+        // HTTP 인증 방식은 RFC 7235 정의에 따라 아래 인증 헤더 형태를 가져야 함.(Bearer tokenValue)
+        response.setHeader("Authorization", "Bearer " + accessToken);
+        response.addCookie(createCookie("refreshToken", refreshToken));
+        response.setStatus(HttpStatus.OK.value());
     }
 
     //로그인 실패시 실행하는 메소드
@@ -60,5 +65,16 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
         System.out.println("로그인 실패");
         response.setStatus(401);
+    }
+
+    private Cookie createCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(24*60*60);
+        //cookie.setSecure(true);
+        //cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        return cookie;
     }
 }

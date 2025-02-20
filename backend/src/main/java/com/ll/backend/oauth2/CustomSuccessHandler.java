@@ -35,9 +35,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 60*60*60L);
+        String accessToken = jwtUtil.createJwt("access", username, role, 60*10*1000L);
+        String refreshToken = jwtUtil.createJwt("refresh", username, role, 60*60*24*1000L);
 
-        response.addCookie(createCookie("Authorization", token));
+        response.addCookie(createCookie("Authorization", accessToken));
+        response.addCookie(createCookie("refreshToken", refreshToken));
+        // 엑세스 토큰은 헤더로 전송 후 사용자의 로컬 스토리지에, 리프레시 토큰은 쿠키로 저장해야 함.
         // response.addHeader로 발급을 진행하면 하이퍼 링크로 받을 수 없음.
         // 첫 발급 이후에는 헤더로 JWT를 이동 시킬 수 있으므로 아래 로직을 이용
         // 1. 로그인 성공 쿠키로 발급
@@ -50,7 +53,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60*60*60);
+        cookie.setMaxAge(24*60*60);
         //cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
