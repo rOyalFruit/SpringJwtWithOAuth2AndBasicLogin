@@ -1,6 +1,7 @@
 package com.ll.backend.jwt;
 
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -39,15 +40,13 @@ public class JwtUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("category", String.class);
     }
 
-    public String createJwt(String category, String username, String role, Long expiredMs) {
-
+    public String createToken(TokenInfo tokenInfo) {
         return Jwts.builder()
-                .claim("category", category)
-                .claim("username", username)
-                .claim("role", role)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiredMs))
-                .signWith(secretKey)
+                .setSubject(tokenInfo.username())
+                .claim("role", tokenInfo.role())
+                .claim("category", tokenInfo.category())
+                .setExpiration(new Date(System.currentTimeMillis() + tokenInfo.expirationTime()))
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 }

@@ -3,6 +3,7 @@ package com.ll.backend.controller;
 import com.ll.backend.entity.RefreshEntity;
 import com.ll.backend.jwt.AuthConstants;
 import com.ll.backend.jwt.JwtUtil;
+import com.ll.backend.jwt.TokenInfo;
 import com.ll.backend.repository.RefreshRepository;
 import com.ll.backend.util.CookieUtil;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -96,8 +97,8 @@ public class JwtController {
         String role = jwtUtil.getRole(refresh);
 
         //make new JWT
-        String newAccessToken = jwtUtil.createJwt("access", username, role, 60 * 10 * 1000L);
-        String newRefreshToken = jwtUtil.createJwt("refresh", username, role, 60 * 60 * 24 * 1000L);
+        String newAccessToken = jwtUtil.createToken(TokenInfo.accessToken(username, role).build());
+        String newRefreshToken = jwtUtil.createToken(TokenInfo.refreshToken(username, role).build());
 
         //Refresh 토큰 저장 DB에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
         refreshRepository.deleteByRefresh(refresh);

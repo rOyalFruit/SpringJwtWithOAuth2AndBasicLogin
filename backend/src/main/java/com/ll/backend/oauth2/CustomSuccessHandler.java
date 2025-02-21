@@ -4,10 +4,10 @@ import com.ll.backend.dto.CustomOAuth2User;
 import com.ll.backend.entity.RefreshEntity;
 import com.ll.backend.jwt.AuthConstants;
 import com.ll.backend.jwt.JwtUtil;
+import com.ll.backend.jwt.TokenInfo;
 import com.ll.backend.repository.RefreshRepository;
 import com.ll.backend.util.CookieUtil;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +41,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String accessToken = jwtUtil.createJwt(AuthConstants.ACCESS_TOKEN, username, role, AuthConstants.ACCESS_TOKEN_EXPIRATION);
-        String refreshToken = jwtUtil.createJwt(AuthConstants.REFRESH_TOKEN, username, role, AuthConstants.REFRESH_TOKEN_EXPIRATION);
+        String accessToken = jwtUtil.createToken(TokenInfo.accessToken(username, role).build());
+        String refreshToken = jwtUtil.createToken(TokenInfo.refreshToken(username, role).build());
 
         addRefreshEntity(username, refreshToken, AuthConstants.REFRESH_TOKEN_EXPIRATION);
 
