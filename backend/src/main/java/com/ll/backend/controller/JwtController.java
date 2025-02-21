@@ -1,6 +1,7 @@
 package com.ll.backend.controller;
 
 import com.ll.backend.entity.RefreshEntity;
+import com.ll.backend.jwt.AuthConstants;
 import com.ll.backend.jwt.JwtUtil;
 import com.ll.backend.repository.RefreshRepository;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -40,13 +41,13 @@ public class JwtController {
             String accessToken = "Bearer " + jwt;
 
             // Authorization 쿠키 제거
-            Cookie cookie = new Cookie("Authorization", null);
+            Cookie cookie = new Cookie(AuthConstants.AUTHORIZATION, null);
             cookie.setMaxAge(0);
-            cookie.setPath("/");
+            cookie.setPath(AuthConstants.COOKIE_PATH);
             response.addCookie(cookie);
 
             return ResponseEntity.ok()
-                    .header("Authorization", accessToken)
+                    .header(AuthConstants.AUTHORIZATION, accessToken)
                     .build();
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -57,7 +58,7 @@ public class JwtController {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("Authorization".equals(cookie.getName())) {
+                if (cookie.getName().equals(AuthConstants.AUTHORIZATION)) {
                     return cookie.getValue();
                 }
             }

@@ -55,15 +55,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String accessToken = jwtUtil.createJwt("access", username, role, 60*10*1000L);      // 엑세스 토큰 만료기간: 10분
-        String refreshToken = jwtUtil.createJwt("refresh", username, role, 60*60*24*1000L); // 리프레시 토큰 만료기간: 24시간
+        String accessToken = jwtUtil.createJwt(AuthConstants.ACCESS_TOKEN, username, role, AuthConstants.ACCESS_TOKEN_EXPIRATION);
+        String refreshToken = jwtUtil.createJwt(AuthConstants.REFRESH_TOKEN, username, role, AuthConstants.REFRESH_TOKEN_EXPIRATION);
 
         //Refresh 토큰 저장
-        addRefreshEntity(username, refreshToken, 60*60*24*1000L);
+        addRefreshEntity(username, refreshToken, AuthConstants.REFRESH_TOKEN_EXPIRATION);
 
         // HTTP 인증 방식은 RFC 7235 정의에 따라 아래 인증 헤더 형태를 가져야 함.(Bearer tokenValue)
-        response.setHeader("Authorization", "Bearer " + accessToken);
-        response.addCookie(createCookie("refreshToken", refreshToken));
+        response.setHeader(AuthConstants.AUTHORIZATION, "Bearer " + accessToken);
+        response.addCookie(createCookie(AuthConstants.REFRESH_TOKEN, refreshToken));
         response.setStatus(HttpStatus.OK.value());
     }
 
@@ -77,7 +77,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
+        cookie.setMaxAge(AuthConstants.COOKIE_MAX_AGE);
         //cookie.setSecure(true);
         //cookie.setPath("/");
         cookie.setHttpOnly(true);
