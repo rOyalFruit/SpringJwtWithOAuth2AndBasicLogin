@@ -4,6 +4,7 @@ import com.ll.backend.entity.RefreshEntity;
 import com.ll.backend.jwt.AuthConstants;
 import com.ll.backend.jwt.JwtUtil;
 import com.ll.backend.repository.RefreshRepository;
+import com.ll.backend.util.CookieUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -35,16 +36,14 @@ public class JwtController {
     @GetMapping("/cookie-to-header")
     public ResponseEntity<Void> getJwt(HttpServletRequest request, HttpServletResponse response) {
         // 쿠키에서 JWT 추출
-        String jwt = extractJwtFromCookie(request);
+        Cookie[] cookies = request.getCookies();
+        String jwt = CookieUtil.extractCookieValue(cookies, AuthConstants.AUTHORIZATION);
 
         if (jwt != null) {
             String accessToken = "Bearer " + jwt;
 
             // Authorization 쿠키 제거
-            Cookie cookie = new Cookie(AuthConstants.AUTHORIZATION, null);
-            cookie.setMaxAge(0);
-            cookie.setPath(AuthConstants.COOKIE_PATH);
-            response.addCookie(cookie);
+            response.addCookie(CookieUtil.createExpiredCookie(AuthConstants.AUTHORIZATION));
 
             return ResponseEntity.ok()
                     .header(AuthConstants.AUTHORIZATION, accessToken)
@@ -54,31 +53,12 @@ public class JwtController {
         }
     }
 
-    private String extractJwtFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(AuthConstants.AUTHORIZATION)) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
-
     @PostMapping("/reissue")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
 
         //get refresh token
-        String refresh = null;
         Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-
-            if (cookie.getName().equals("refreshToken")) {
-
-                refresh = cookie.getValue();
-            }
-        }
+        String refresh = CookieUtil.extractCookieValue(cookies, AuthConstants.AUTHORIZATION);
 
         if (refresh == null) {
 
@@ -125,20 +105,9 @@ public class JwtController {
 
         //response
         response.setHeader("Authorization", "Bearer " + newAccessToken);
-        response.addCookie(createCookie("refreshToken", newRefreshToken));
+        response.addCookie(CookieUtil.createAuthCookie(AuthConstants.REFRESH_TOKEN, newRefreshToken));
 
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
-        //cookie.setSecure(true);
-        //cookie.setPath("/");
-        cookie.setHttpOnly(true);
-
-        return cookie;
     }
 
     private void addRefreshEntity(String username, String refresh, Long expiredMs) {

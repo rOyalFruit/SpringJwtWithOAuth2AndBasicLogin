@@ -5,6 +5,7 @@ import com.ll.backend.entity.RefreshEntity;
 import com.ll.backend.jwt.AuthConstants;
 import com.ll.backend.jwt.JwtUtil;
 import com.ll.backend.repository.RefreshRepository;
+import com.ll.backend.util.CookieUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,8 +46,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         addRefreshEntity(username, refreshToken, AuthConstants.REFRESH_TOKEN_EXPIRATION);
 
-        response.addCookie(createCookie(AuthConstants.AUTHORIZATION, accessToken));
-        response.addCookie(createCookie(AuthConstants.REFRESH_TOKEN, refreshToken));
+        response.addCookie(CookieUtil.createAuthCookie(AuthConstants.AUTHORIZATION, accessToken));
+        response.addCookie(CookieUtil.createAuthCookie(AuthConstants.REFRESH_TOKEN, refreshToken));
         // 엑세스 토큰은 헤더로 전송 후 사용자의 로컬 스토리지에, 리프레시 토큰은 쿠키로 저장해야 함.
         // response.addHeader로 발급을 진행하면 하이퍼 링크로 받을 수 없음.
         // 첫 발급 이후에는 헤더로 JWT를 이동 시킬 수 있으므로 아래 로직을 이용
@@ -55,17 +56,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 3. 프론트의 특정 페이지는 axios를 통해 쿠키를(credentials=true)를 가지고 다시 백엔드로 접근하여 헤더로 JWT를 받아옴
         // 4. 헤더로 받아온 JWT를 로컬 스토리지등에 보관하여 사용
         response.sendRedirect(AuthConstants.AUTH_SUCCESS_REDIRECT_URL);
-    }
-
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(AuthConstants.COOKIE_MAX_AGE);
-        //cookie.setSecure(true);
-        cookie.setPath(AuthConstants.COOKIE_PATH);
-        cookie.setHttpOnly(true);
-
-        return cookie;
     }
 
     private void addRefreshEntity(String username, String refresh, Long expiredMs) {

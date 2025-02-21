@@ -3,8 +3,8 @@ package com.ll.backend.jwt;
 import com.ll.backend.dto.CustomUserDetails;
 import com.ll.backend.entity.RefreshEntity;
 import com.ll.backend.repository.RefreshRepository;
+import com.ll.backend.util.CookieUtil;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +63,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         // HTTP 인증 방식은 RFC 7235 정의에 따라 아래 인증 헤더 형태를 가져야 함.(Bearer tokenValue)
         response.setHeader(AuthConstants.AUTHORIZATION, "Bearer " + accessToken);
-        response.addCookie(createCookie(AuthConstants.REFRESH_TOKEN, refreshToken));
+        response.addCookie(CookieUtil.createAuthCookie(AuthConstants.REFRESH_TOKEN, refreshToken));
         response.setStatus(HttpStatus.OK.value());
     }
 
@@ -72,17 +72,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
         System.out.println("로그인 실패");
         response.setStatus(401);
-    }
-
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(AuthConstants.COOKIE_MAX_AGE);
-        //cookie.setSecure(true);
-        //cookie.setPath("/");
-        cookie.setHttpOnly(true);
-
-        return cookie;
     }
 
     private void addRefreshEntity(String username, String refresh, Long expiredMs) {
