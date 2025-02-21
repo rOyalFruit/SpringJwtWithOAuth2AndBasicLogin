@@ -5,8 +5,8 @@ import com.ll.backend.jwt.JwtFilter;
 import com.ll.backend.jwt.JwtUtil;
 import com.ll.backend.jwt.LoginFilter;
 import com.ll.backend.oauth2.CustomSuccessHandler;
-import com.ll.backend.repository.RefreshRepository;
 import com.ll.backend.service.CustomOAuth2UserService;
+import com.ll.backend.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,7 +35,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JwtUtil jwtUtil;
-    private final RefreshRepository refreshRepository;
+    private final RefreshTokenService refreshTokenService;
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -83,9 +83,9 @@ public class SecurityConfig {
                 .addFilterAt(new LoginFilter(
                                 authenticationManager(authenticationConfiguration),
                                 jwtUtil,
-                                refreshRepository),
+                                refreshTokenService),
                         UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class)
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshTokenService), LogoutFilter.class)
                 // OAuth 2.0 로그인 시 사용되는 서비스 설정
                 // 1. userInfoEndpoint(): OAuth 2.0 공급자로부터 사용자 정보를 가져오는 엔드포인트를 구성.
                 // 2. userService(customOAuth2UserService):

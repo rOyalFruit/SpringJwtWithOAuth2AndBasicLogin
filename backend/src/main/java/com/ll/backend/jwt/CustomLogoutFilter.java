@@ -1,6 +1,6 @@
 package com.ll.backend.jwt;
 
-import com.ll.backend.repository.RefreshRepository;
+import com.ll.backend.service.RefreshTokenService;
 import com.ll.backend.util.CookieUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -19,7 +19,7 @@ import java.io.IOException;
 public class CustomLogoutFilter extends GenericFilterBean {
 
     private final JwtUtil jwtUtil;
-    private final RefreshRepository refreshRepository;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -65,14 +65,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
         }
 
         //DB에 저장되어 있는지 확인
-        Boolean isExist = refreshRepository.existsByRefresh(refresh);
-        if (!isExist) {
+        if (!refreshTokenService.existsByRefreshToken(refresh)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
         //로그아웃 진행
-        refreshRepository.deleteByRefresh(refresh); //Refresh 토큰 DB에서 제거
+        refreshTokenService.deleteRefreshToken(refresh);
         response.addCookie(CookieUtil.createExpiredCookie(AuthConstants.REFRESH_TOKEN)); //Refresh 토큰 Cookie 값 0
         response.setStatus(HttpServletResponse.SC_OK);
     }

@@ -1,8 +1,7 @@
 package com.ll.backend.jwt;
 
 import com.ll.backend.dto.CustomUserDetails;
-import com.ll.backend.entity.RefreshEntity;
-import com.ll.backend.repository.RefreshRepository;
+import com.ll.backend.service.RefreshTokenService;
 import com.ll.backend.util.CookieUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +16,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 
 @RequiredArgsConstructor
@@ -25,7 +23,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final RefreshRepository refreshRepository;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
@@ -59,7 +57,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String refreshToken = jwtUtil.createToken(TokenInfo.refreshToken(username, role).build());
 
         //Refresh 토큰 저장
-        addRefreshEntity(username, refreshToken, AuthConstants.REFRESH_TOKEN_EXPIRATION);
+        refreshTokenService.saveRefreshToken(username, refreshToken);
 
         // HTTP 인증 방식은 RFC 7235 정의에 따라 아래 인증 헤더 형태를 가져야 함.(Bearer tokenValue)
         response.setHeader(AuthConstants.AUTHORIZATION, "Bearer " + accessToken);
@@ -72,17 +70,5 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
         System.out.println("로그인 실패");
         response.setStatus(401);
-    }
-
-    private void addRefreshEntity(String username, String refresh, Long expiredMs) {
-
-        Date date = new Date(System.currentTimeMillis() + expiredMs);
-
-        RefreshEntity refreshEntity = new RefreshEntity();
-        refreshEntity.setUsername(username);
-        refreshEntity.setRefresh(refresh);
-        refreshEntity.setExpiration(date.toString());
-
-        refreshRepository.save(refreshEntity);
     }
 }

@@ -1,11 +1,10 @@
 package com.ll.backend.oauth2;
 
 import com.ll.backend.dto.CustomOAuth2User;
-import com.ll.backend.entity.RefreshEntity;
 import com.ll.backend.jwt.AuthConstants;
 import com.ll.backend.jwt.JwtUtil;
 import com.ll.backend.jwt.TokenInfo;
-import com.ll.backend.repository.RefreshRepository;
+import com.ll.backend.service.RefreshTokenService;
 import com.ll.backend.util.CookieUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 
 @Component
@@ -26,7 +24,7 @@ import java.util.Iterator;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
-    private final RefreshRepository refreshRepository;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -44,7 +42,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String accessToken = jwtUtil.createToken(TokenInfo.accessToken(username, role).build());
         String refreshToken = jwtUtil.createToken(TokenInfo.refreshToken(username, role).build());
 
-        addRefreshEntity(username, refreshToken, AuthConstants.REFRESH_TOKEN_EXPIRATION);
+        refreshTokenService.saveRefreshToken(username, refreshToken);
 
         response.addCookie(CookieUtil.createAuthCookie(AuthConstants.AUTHORIZATION, accessToken));
         response.addCookie(CookieUtil.createAuthCookie(AuthConstants.REFRESH_TOKEN, refreshToken));
@@ -56,17 +54,5 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 3. 프론트의 특정 페이지는 axios를 통해 쿠키를(credentials=true)를 가지고 다시 백엔드로 접근하여 헤더로 JWT를 받아옴
         // 4. 헤더로 받아온 JWT를 로컬 스토리지등에 보관하여 사용
         response.sendRedirect(AuthConstants.AUTH_SUCCESS_REDIRECT_URL);
-    }
-
-    private void addRefreshEntity(String username, String refresh, Long expiredMs) {
-
-        Date date = new Date(System.currentTimeMillis() + expiredMs);
-
-        RefreshEntity refreshEntity = new RefreshEntity();
-        refreshEntity.setUsername(username);
-        refreshEntity.setRefresh(refresh);
-        refreshEntity.setExpiration(date.toString());
-
-        refreshRepository.save(refreshEntity);
     }
 }
