@@ -15,6 +15,9 @@ public enum ErrorCode {
     TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "A003", "Token not found"),
     INVALID_LOGIN(HttpStatus.UNAUTHORIZED, "A004", "Invalid login credentials"),
     UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "A005", "Unauthorized access"),
+    TOKEN_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "A006", "Failed to generate token"),
+    LOGOUT_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "A007", "An error occurred during logout processing."),
+    AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "A008", "Authentication failed"),
 
     // Business Errors
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "Resource not found"),

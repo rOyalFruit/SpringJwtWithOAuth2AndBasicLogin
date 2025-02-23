@@ -2,11 +2,15 @@ package com.ll.backend.jwt;
 
 import com.ll.backend.dto.CustomUserDetails;
 import com.ll.backend.entity.Member;
+import com.ll.backend.global.exception.auth.token.ExpiredTokenException;
+import com.ll.backend.global.exception.auth.token.InvalidTokenException;
+import com.ll.backend.global.exception.auth.token.TokenNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,67 +18,82 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        String token = request.getHeader(AuthConstants.AUTHORIZATION);
-
-        //accessToken 검증
-        if (token == null || !token.startsWith("Bearer ")) {
+        // 인증이 필요없는 경로는 필터 검사에서 제외
+        if (shouldSkipFilter(request)) {
             filterChain.doFilter(request, response);
-
             return;
         }
 
-        //Bearer 부분 제거 후 순수 토큰만 획득
-        String accessToken = token.split(" ")[1];
+        String token = extractToken(request);
 
-        //토큰 소멸 시간 검증
-        if (jwtUtil.isExpired(accessToken)) {
-            System.out.println("token expired");
-            filterChain.doFilter(request, response);
-
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-            return;
+        if (token != null) {
+            validateToken(token);
+            Authentication authentication = createAuthentication(token);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-
-        // 토큰이 access인지 확인 (발급시 페이로드에 명시)
-        String category = jwtUtil.getCategory(accessToken);
-
-        if (!category.equals(AuthConstants.ACCESS_TOKEN)) {
-
-            //response body
-            PrintWriter writer = response.getWriter();
-            writer.print("invalid access token");
-
-            //response status code
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        // 토큰에서 username과 role 획득
-        String username = jwtUtil.getUsername(accessToken);
-        String role = jwtUtil.getRole(accessToken);
-
-        Member member = new Member();
-        member.setUsername(username);
-        member.setRole(role);
-
-        UserDetails userDetails = new CustomUserDetails(member);
-
-        //스프링 시큐리티 인증 토큰 생성
-        Authentication authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        //세션에 사용자 등록
-        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        String token = request.getHeader(AuthConstants.AUTHORIZATION);
+
+        if (token == null) {
+            throw new TokenNotFoundException();
+        }
+
+        if (!token.startsWith("Bearer ")) {
+            throw new InvalidTokenException();
+        }
+
+        return token.split(" ")[1];
+    }
+
+    private void validateToken(String token) {
+        if (jwtUtil.isExpired(token)) {
+            throw new ExpiredTokenException();
+        }
+
+        String category = jwtUtil.getCategory(token);
+        if (!category.equals(AuthConstants.ACCESS_TOKEN)) {
+            throw new InvalidTokenException();
+        }
+    }
+
+    private Authentication createAuthentication(String token) {
+        try {
+            String username = jwtUtil.getUsername(token);
+            String role = jwtUtil.getRole(token);
+
+            Member member = new Member();
+            member.setUsername(username);
+            member.setRole(role);
+
+            UserDetails userDetails = new CustomUserDetails(member);
+            return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        } catch (Exception e) {
+            throw new InvalidTokenException();
+        }
+    }
+
+    private boolean shouldSkipFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+
+        return path.startsWith("/login") ||           // 모든 로그인 관련 경로
+               path.startsWith("/oauth2") ||          // 모든 OAuth2 관련 경로
+               path.startsWith("/jwt") ||
+               (path.equals("/join") && method.equals("POST"));
     }
 }

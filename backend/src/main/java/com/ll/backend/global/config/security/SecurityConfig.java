@@ -1,5 +1,7 @@
-package com.ll.backend.config;
+package com.ll.backend.global.config.security;
 
+import com.ll.backend.global.config.security.handler.CustomAccessDeniedHandler;
+import com.ll.backend.global.config.security.handler.CustomAuthenticationEntryPoint;
 import com.ll.backend.jwt.CustomLogoutFilter;
 import com.ll.backend.jwt.JwtFilter;
 import com.ll.backend.jwt.JwtUtil;
@@ -36,6 +38,8 @@ public class SecurityConfig {
     private final CustomSuccessHandler customSuccessHandler;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -86,6 +90,10 @@ public class SecurityConfig {
                                 refreshTokenService),
                         UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshTokenService), LogoutFilter.class)
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
                 // OAuth 2.0 로그인 시 사용되는 서비스 설정
                 // 1. userInfoEndpoint(): OAuth 2.0 공급자로부터 사용자 정보를 가져오는 엔드포인트를 구성.
                 // 2. userService(customOAuth2UserService):
