@@ -4,6 +4,7 @@ import com.ll.backend.dto.CustomUserDetails;
 import com.ll.backend.entity.Member;
 import com.ll.backend.global.exception.auth.token.ExpiredTokenException;
 import com.ll.backend.global.exception.auth.token.InvalidTokenException;
+import com.ll.backend.global.exception.auth.token.TokenException;
 import com.ll.backend.global.exception.auth.token.TokenNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -94,6 +96,9 @@ public class JwtFilter extends OncePerRequestFilter {
         return path.startsWith("/login") ||           // 모든 로그인 관련 경로
                path.startsWith("/oauth2") ||          // 모든 OAuth2 관련 경로
                path.startsWith("/jwt") ||
+               path.startsWith("/swagger-ui") ||
+               path.startsWith("/v3/api-docs") ||
+               path.equals("/") ||
                (path.equals("/join") && method.equals("POST"));
     }
 }
