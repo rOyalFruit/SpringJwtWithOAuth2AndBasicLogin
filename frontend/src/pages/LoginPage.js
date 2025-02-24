@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 function App() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate();
 
     // 소셜 로그인 함수
     const onNaverLogin = () => {
@@ -52,7 +54,7 @@ function App() {
         <div className="min-h-screen flex flex-col items-center bg-gray-50">
             <main className="flex-grow flex flex-col items-center justify-center px-4">
                 <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-                    <h2 className="text-3xl font-bold text-center mb-8">LOG IN</h2>
+                    <h2 className="text-3xl font-bold text-center mb-8">로그인</h2>
                     <form className="space-y-4" onSubmit={handleLogin}>
                         <input
                             type="text"
@@ -75,6 +77,20 @@ function App() {
                             로그인
                         </button>
                     </form>
+
+                    <div className="mt-4 text-center">
+                        <Link to="/signup" className="text-blue-500 hover:underline">
+                            회원가입
+                        </Link>
+                        <span className="mx-2">|</span>
+                        <Link to="/find-id" className="text-blue-500 hover:underline">
+                            아이디 찾기
+                        </Link>
+                        <span className="mx-2">|</span>
+                        <Link to="/find-password" className="text-blue-500 hover:underline">
+                            비밀번호 찾기
+                        </Link>
+                    </div>
 
                     {/* 소셜 로그인 */}
                     <div className="mt-8 text-center">

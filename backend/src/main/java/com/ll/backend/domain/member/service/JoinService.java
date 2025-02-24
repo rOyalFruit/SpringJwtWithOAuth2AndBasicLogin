@@ -3,9 +3,12 @@ package com.ll.backend.domain.member.service;
 import com.ll.backend.domain.member.dto.JoinDto;
 import com.ll.backend.domain.member.entity.Member;
 import com.ll.backend.domain.member.repository.MemberRepository;
+import com.ll.backend.global.exception.business.InvalidInputException;
+import com.ll.backend.global.exception.business.UserAlreadyRegisteredException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -14,24 +17,34 @@ public class JoinService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public void joinProcess(JoinDto joinDto) {
+    @Transactional(readOnly = true)
+    public Member joinProcess(JoinDto joinDto) {
+        validatePasswords(joinDto.password(), joinDto.confirmPassword());
+        checkIfUserExists(joinDto.username());
 
-        String username = joinDto.getUsername();
-        String password = joinDto.getPassword();
+        Member member = createMember(joinDto);
+        return memberRepository.save(member);
+    }
 
-        Boolean isExist = memberRepository.existsByUsername(username);
-
-        if (isExist) {
-
-            return;
+    private void validatePasswords(String password, String password2) {
+        if (!password.equals(password2)) {
+            throw new InvalidInputException("Password does not match");
         }
+    }
 
+    private void checkIfUserExists(String username) {
+        if (memberRepository.existsByUsername(username)) {
+            throw new UserAlreadyRegisteredException("User already exists");
+        }
+    }
+
+    private Member createMember(JoinDto joinDto) {
         Member member = new Member();
-
-        member.setUsername(username);
-        member.setPassword(bCryptPasswordEncoder.encode(password));
+        member.setUsername(joinDto.username());
+        member.setPassword(bCryptPasswordEncoder.encode(joinDto.password()));
+        member.setEmail(joinDto.email());
+        member.setName(joinDto.nickname());
         member.setRole("ROLE_ADMIN");
-
-        memberRepository.save(member);
+        return member;
     }
 }

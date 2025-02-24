@@ -4,6 +4,9 @@ import com.ll.backend.global.exception.auth.AuthException;
 import com.ll.backend.global.exception.auth.token.TokenException;
 import com.ll.backend.global.exception.base.BaseException;
 import com.ll.backend.global.exception.base.ErrorCode;
+import com.ll.backend.global.exception.business.BusinessException;
+import com.ll.backend.global.exception.business.InvalidInputException;
+import com.ll.backend.global.exception.business.UserAlreadyRegisteredException;
 import com.ll.backend.global.exception.dto.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +38,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthException.class)
     protected ResponseEntity<ErrorResponse> handleAuthException(AuthException e, HttpServletRequest request) {
         log.error("handleAuthException", e);
+        return ErrorResponse.toResponseEntity(e.getErrorCode(), request.getRequestURI());
+    }
+
+    /**
+     * Business Exception Handler
+     */
+    @ExceptionHandler(BusinessException.class)
+    protected ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e, HttpServletRequest request) {
+        log.error("handleBusinessException", e);
         return ErrorResponse.toResponseEntity(e.getErrorCode(), request.getRequestURI());
     }
 
@@ -90,5 +102,23 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {
         log.error("handleException", e);
         return ErrorResponse.toResponseEntity(ErrorCode.INTERNAL_SERVER_ERROR, request.getRequestURI());
+    }
+
+    /**
+     * UserAlreadyRegistered Exception Handler
+     */
+    @ExceptionHandler(UserAlreadyRegisteredException.class)
+    protected ResponseEntity<ErrorResponse> handleUserAlreadyRegisteredException(UserAlreadyRegisteredException e, HttpServletRequest request) {
+        log.error("handleUserAlreadyRegisteredException", e);
+        return ErrorResponse.toResponseEntity(e.getErrorCode(), request.getRequestURI());
+    }
+
+    /**
+     * InvalidInput Exception Handler
+     */
+    @ExceptionHandler(InvalidInputException.class)
+    protected ResponseEntity<ErrorResponse> InvalidInputException(InvalidInputException e, HttpServletRequest request) {
+        log.error("InvalidInputException", e);
+        return ErrorResponse.toResponseEntity(e.getErrorCode(), request.getRequestURI());
     }
 }

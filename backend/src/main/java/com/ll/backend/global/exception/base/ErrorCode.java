@@ -21,7 +21,8 @@ public enum ErrorCode {
 
     // Business Errors
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "Resource not found"),
-    DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "B002", "Resource already exists");
+    DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "B002", "Resource already exists"),
+    USER_ALREADY_REGISTERED(HttpStatus.CONFLICT, "B003", "User is already registered");
 
     private final HttpStatus status;
     private final String code;
