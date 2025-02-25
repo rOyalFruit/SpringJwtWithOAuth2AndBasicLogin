@@ -1,29 +1,29 @@
 package com.ll.backend.domain.auth.entity;
 
 import com.ll.backend.global.jwt.AuthConstants;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Column;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
 import java.util.concurrent.TimeUnit;
 
-@Getter
-@Setter
 @RedisHash(value = "refreshToken")
-public class RefreshEntity {
+public record RefreshEntity(
+        @Id
+        @Column(length = 300)
+        String refresh,
 
-    @Id
-    @Column(length = 300)
-    private String refresh;
+        String username,
 
-    private String username;
+        String expiration,
 
-    private String expiration;
-
-    @TimeToLive(unit = TimeUnit.MILLISECONDS)
-    private Long timeToLive = AuthConstants.REFRESH_TOKEN_EXPIRATION;
+        @TimeToLive(unit = TimeUnit.MILLISECONDS)
+        Long timeToLive
+) { // Custom constructor to set default value for timeToLive
+    public RefreshEntity(String refresh, String username, String expiration) {
+        this(refresh, username, expiration, AuthConstants.REFRESH_TOKEN_EXPIRATION);
+    }
 }
+
 

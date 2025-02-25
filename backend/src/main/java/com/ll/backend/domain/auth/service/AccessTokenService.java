@@ -19,10 +19,12 @@ public class AccessTokenService {
 
     @Cacheable(value = "accessToken", key = "#accessToken")
     public AccessEntity saveAccessToken(String username, String accessToken) {
-        AccessEntity accessEntity = new AccessEntity();
-        accessEntity.setUsername(username);
-        accessEntity.setAccess(accessToken);
-        accessEntity.setExpiration(new Date(System.currentTimeMillis() + AuthConstants.ACCESS_TOKEN_EXPIRATION).toString());
+        AccessEntity accessEntity = new AccessEntity(
+                accessToken,
+                username,
+                new Date(System.currentTimeMillis() + AuthConstants.ACCESS_TOKEN_EXPIRATION).toString()
+        );
+
         return accessEntity;
     }
 

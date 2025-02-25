@@ -49,11 +49,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .role("ROLE_USER")
                     .build();
 
-            OAuth2UserInfoDto userDTO = new OAuth2UserInfoDto();
-            userDTO.setUsername(username);
-            userDTO.setName(oAuth2Response.getName());
-            userDTO.setRole(member.getRole());
-            userDTO.setProfileImageUrl(oAuth2Response.getProfileImageUrl());
+            OAuth2UserInfoDto userDTO = new OAuth2UserInfoDto(
+                    username,
+                    oAuth2Response.getName(),
+                    member.getRole(),
+                    oAuth2Response.getProfileImageUrl()
+            );
 
             memberRepository.save(member);
 
@@ -69,11 +70,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .role(existData.getRole())
                     .build();
 
-            OAuth2UserInfoDto userDTO = new OAuth2UserInfoDto();
-            userDTO.setUsername(existData.getUsername());
-            userDTO.setName(oAuth2Response.getName());
-            userDTO.setRole(existData.getRole());
-            userDTO.setProfileImageUrl(oAuth2Response.getProfileImageUrl());
+            OAuth2UserInfoDto userDTO = new OAuth2UserInfoDto(
+                    existData.getUsername(),
+                    oAuth2Response.getName(),
+                    existData.getRole(),
+                    oAuth2Response.getProfileImageUrl()
+            );
 
             memberRepository.save(updatedMember);
 

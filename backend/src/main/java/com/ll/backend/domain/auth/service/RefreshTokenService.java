@@ -17,10 +17,11 @@ public class RefreshTokenService {
 
     @Transactional
     public void saveRefreshToken(String username, String refreshToken) {
-        RefreshEntity refreshEntity = new RefreshEntity();
-        refreshEntity.setUsername(username);
-        refreshEntity.setRefresh(refreshToken);
-        refreshEntity.setExpiration(new Date(System.currentTimeMillis() + AuthConstants.REFRESH_TOKEN_EXPIRATION).toString());
+        RefreshEntity refreshEntity = new RefreshEntity(
+                refreshToken,
+                username,
+                new Date(System.currentTimeMillis() + AuthConstants.REFRESH_TOKEN_EXPIRATION).toString()
+        );
 
         refreshRepository.save(refreshEntity);
     }

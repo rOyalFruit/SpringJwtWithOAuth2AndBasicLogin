@@ -1,28 +1,26 @@
 package com.ll.backend.domain.auth.entity;
 
 import com.ll.backend.global.jwt.AuthConstants;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
 import java.util.concurrent.TimeUnit;
 
-@Getter
-@Setter
 @RedisHash(value = "accessToken")
-public class AccessEntity {
+public record AccessEntity(
+        @Id
+        String access,
 
-    @Id
-    @Column(length = 300)
-    private String access;
+        String username,
 
-    private String username;
+        String expiration,
 
-    private String expiration;
-
-    @TimeToLive(unit = TimeUnit.MILLISECONDS)
-    private Long timeToLive = AuthConstants.ACCESS_TOKEN_EXPIRATION;
+        @TimeToLive(unit = TimeUnit.MILLISECONDS)
+        Long timeToLive
+) {
+    // Custom constructor to set default value for timeToLive
+    public AccessEntity(String access, String username, String expiration) {
+        this(access, username, expiration, AuthConstants.ACCESS_TOKEN_EXPIRATION);
+    }
 }

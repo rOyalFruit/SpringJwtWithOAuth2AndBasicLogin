@@ -1,17 +1,13 @@
 package com.ll.backend.global.security.oauth2.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+public record OAuth2UserInfoDto(
 
-@Getter
-@Setter
-public class OAuth2UserInfoDto {
+        String role,
 
-    private String role;
+        String name,
 
-    private String name;
+        String username,
 
-    private String username;
-
-    private String profileImageUrl;
+        String profileImageUrl
+) {
 }
