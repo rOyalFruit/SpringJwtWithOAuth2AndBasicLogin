@@ -39,12 +39,13 @@ public class JoinService {
     }
 
     private Member createMember(JoinDto joinDto) {
-        Member member = new Member();
-        member.setUsername(joinDto.username());
-        member.setPassword(bCryptPasswordEncoder.encode(joinDto.password()));
-        member.setEmail(joinDto.email());
-        member.setName(joinDto.nickname());
-        member.setRole("ROLE_ADMIN");
-        return member;
+
+        return Member.builder()
+                .username(joinDto.username())
+                .password(bCryptPasswordEncoder.encode(joinDto.password()))
+                .email(joinDto.email())
+                .name(joinDto.nickname())
+                .role("ROLE_ADMIN")
+                .build();
     }
 }
