@@ -1,5 +1,6 @@
 package com.ll.backend.global.jwt;
 
+import com.ll.backend.domain.auth.service.AccessTokenService;
 import com.ll.backend.domain.auth.service.RefreshTokenService;
 import com.ll.backend.global.exception.auth.token.ExpiredTokenException;
 import com.ll.backend.global.exception.auth.token.InvalidTokenException;
@@ -22,11 +23,13 @@ public class JwtUtil {
 
     private final SecretKey secretKey;
     private final RefreshTokenService refreshTokenService;
+    private final AccessTokenService accessTokenService;
 
-    public JwtUtil(@Value("${spring.jwt.secret}") String secret, RefreshTokenService refreshTokenService) {
+    public JwtUtil(@Value("${spring.jwt.secret}") String secret, RefreshTokenService refreshTokenService, AccessTokenService accessTokenService) {
 
         secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
         this.refreshTokenService = refreshTokenService;
+        this.accessTokenService = accessTokenService;
     }
 
     public String getUsername(String token) {
@@ -83,6 +86,10 @@ public class JwtUtil {
 
         String category = getCategory(token);
         if (!category.equals(AuthConstants.ACCESS_TOKEN)) {
+            throw new InvalidTokenException();
+        }
+
+        if (accessTokenService.getAccessEntity(token) == null) {
             throw new InvalidTokenException();
         }
     }

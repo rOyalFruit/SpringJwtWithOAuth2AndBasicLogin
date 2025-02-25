@@ -44,7 +44,8 @@ public class CustomLogoutFilter extends GenericFilterBean {
             String refreshToken = jwtUtil.extractRefreshToken(request.getCookies());
 
             jwtUtil.validateRefreshToken(refreshToken);
-            jwtUtil.validateAccessToken(accessToken);
+            // 로그아웃 요청 시점에 엑세스 토큰이 만료되었을 수 있으므로 엑세스 토큰 검증은 생략.
+            // jwtUtil.validateAccessToken(accessToken);
 
             processLogout(accessToken, refreshToken);
             response.addCookie(CookieUtil.createExpiredCookie(AuthConstants.REFRESH_TOKEN));

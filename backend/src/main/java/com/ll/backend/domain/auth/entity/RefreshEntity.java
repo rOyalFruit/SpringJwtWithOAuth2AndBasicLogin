@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 @Getter
 @Setter
-@RedisHash(value = "refreshToken") // 레디스 영구 저장소에 저장됨. CacheManager의 영향을 받지 않음.
+@RedisHash(value = "refreshToken")
 public class RefreshEntity {
 
     @Id
