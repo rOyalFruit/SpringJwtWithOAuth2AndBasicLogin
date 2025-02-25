@@ -11,7 +11,7 @@ public class AuthConstants {
     public static final long REFRESH_TOKEN_EXPIRATION = 60 * 60 * 24 * 1000L; // 24 hours
 
     // Cookie Settings
-    public static final int COOKIE_MAX_AGE = 24 * 60 * 60; // 24 hours in seconds
+    public static final int COOKIE_MAX_AGE = (int)(REFRESH_TOKEN_EXPIRATION / 1000); // 24 hours in seconds
     public static final String COOKIE_PATH = "/";
 
     // URLs

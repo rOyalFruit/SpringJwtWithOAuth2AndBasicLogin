@@ -11,8 +11,8 @@ import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class RefreshTokenService {
+
     private final RefreshRepository refreshRepository;
 
     @Transactional
@@ -27,10 +27,11 @@ public class RefreshTokenService {
 
     @Transactional
     public void deleteRefreshToken(String refreshToken) {
-        refreshRepository.deleteByRefresh(refreshToken);
+        refreshRepository.deleteById(refreshToken);
     }
 
+    @Transactional(readOnly = true)
     public boolean existsByRefreshToken(String refreshToken) {
-        return refreshRepository.existsByRefresh(refreshToken);
+        return refreshRepository.existsById(refreshToken);
     }
 }

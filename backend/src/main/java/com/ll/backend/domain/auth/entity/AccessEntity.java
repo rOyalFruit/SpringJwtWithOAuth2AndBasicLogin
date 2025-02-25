@@ -12,18 +12,17 @@ import java.util.concurrent.TimeUnit;
 
 @Getter
 @Setter
-@RedisHash(value = "refreshToken") // 레디스 영구 저장소에 저장됨. CacheManager의 영향을 받지 않음.
-public class RefreshEntity {
+@RedisHash(value = "accessToken")
+public class AccessEntity {
 
     @Id
     @Column(length = 300)
-    private String refresh;
+    private String access;
 
     private String username;
 
     private String expiration;
 
     @TimeToLive(unit = TimeUnit.MILLISECONDS)
-    private Long timeToLive = AuthConstants.REFRESH_TOKEN_EXPIRATION;
+    private Long timeToLive = AuthConstants.ACCESS_TOKEN_EXPIRATION;
 }
-

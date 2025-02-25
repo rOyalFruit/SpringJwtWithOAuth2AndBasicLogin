@@ -1,5 +1,6 @@
 package com.ll.backend.global.config;
 
+import com.ll.backend.domain.auth.service.AccessTokenService;
 import com.ll.backend.global.security.handler.CustomAccessDeniedHandler;
 import com.ll.backend.global.security.handler.CustomAuthenticationEntryPoint;
 import com.ll.backend.global.security.filter.CustomLogoutFilter;
@@ -39,6 +40,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JwtUtil jwtUtil;
+    private final AccessTokenService accessTokenService;
     private final RefreshTokenService refreshTokenService;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
@@ -65,7 +67,7 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable) // HTTP 기본 인증 비활성화
                 .addFilterAfter(new JwtFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class) // JWT 필터 추가
                 .addFilterAt(createLoginFilter(), UsernamePasswordAuthenticationFilter.class) // 로그인 필터 추가
-                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshTokenService), LogoutFilter.class) // 로그아웃 필터 추가
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, accessTokenService, refreshTokenService), LogoutFilter.class) // 로그아웃 필터 추가
                 .exceptionHandling(this::configureExceptionHandling) // 예외 처리 설정
                 .oauth2Login(this::configureOAuth2Login) // OAuth2 로그인 설정
                 .authorizeHttpRequests(this::configureAuthorization) // 요청 권한 설정
@@ -94,6 +96,7 @@ public class SecurityConfig {
         return new LoginFilter(
                 authenticationManager(authenticationConfiguration),
                 jwtUtil,
+                accessTokenService,
                 refreshTokenService);
     }
 

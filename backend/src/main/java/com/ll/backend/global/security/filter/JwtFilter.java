@@ -1,12 +1,10 @@
 package com.ll.backend.global.security.filter;
 
+import com.ll.backend.domain.member.entity.Member;
+import com.ll.backend.global.exception.auth.token.InvalidTokenException;
 import com.ll.backend.global.jwt.AuthConstants;
 import com.ll.backend.global.jwt.JwtUtil;
 import com.ll.backend.global.security.dto.CustomUserDetails;
-import com.ll.backend.domain.member.entity.Member;
-import com.ll.backend.global.exception.auth.token.ExpiredTokenException;
-import com.ll.backend.global.exception.auth.token.InvalidTokenException;
-import com.ll.backend.global.exception.auth.token.TokenNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,40 +35,16 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = extractToken(request);
+        String authorizationHeader = request.getHeader(AuthConstants.AUTHORIZATION);
+        String accessToken = jwtUtil.extractAccessToken(authorizationHeader);
 
-        if (token != null) {
-            validateToken(token);
-            Authentication authentication = createAuthentication(token);
+        if (accessToken != null) {
+            jwtUtil.validateAccessToken(accessToken);
+            Authentication authentication = createAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private String extractToken(HttpServletRequest request) {
-        String token = request.getHeader(AuthConstants.AUTHORIZATION);
-
-        if (token == null) {
-            throw new TokenNotFoundException();
-        }
-
-        if (!token.startsWith("Bearer ")) {
-            throw new InvalidTokenException();
-        }
-
-        return token.split(" ")[1];
-    }
-
-    private void validateToken(String token) {
-        if (jwtUtil.isExpired(token)) {
-            throw new ExpiredTokenException();
-        }
-
-        String category = jwtUtil.getCategory(token);
-        if (!category.equals(AuthConstants.ACCESS_TOKEN)) {
-            throw new InvalidTokenException();
-        }
     }
 
     private Authentication createAuthentication(String token) {

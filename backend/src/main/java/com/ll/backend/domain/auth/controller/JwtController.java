@@ -56,11 +56,9 @@ public class JwtController {
 
         //get refresh token
         Cookie[] cookies = request.getCookies();
-        String refresh = CookieUtil.extractCookieValue(cookies, AuthConstants.AUTHORIZATION);
+        String refresh = CookieUtil.extractCookieValue(cookies, AuthConstants.REFRESH_TOKEN);
 
         if (refresh == null) {
-
-            //response status code
             return new ResponseEntity<>("refresh token null", HttpStatus.BAD_REQUEST);
         }
 

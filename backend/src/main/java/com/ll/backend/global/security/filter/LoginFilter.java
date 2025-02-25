@@ -1,5 +1,6 @@
 package com.ll.backend.global.security.filter;
 
+import com.ll.backend.domain.auth.service.AccessTokenService;
 import com.ll.backend.global.jwt.AuthConstants;
 import com.ll.backend.global.jwt.JwtUtil;
 import com.ll.backend.domain.auth.service.RefreshTokenService;
@@ -32,6 +33,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final AccessTokenService accessTokenService;
     private final RefreshTokenService refreshTokenService;
 
     @Override
@@ -72,6 +74,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
             //Refresh 토큰 저장
             refreshTokenService.saveRefreshToken(username, refreshToken);
+            accessTokenService.saveAccessToken(username, accessToken);
 
             // HTTP 인증 방식은 RFC 7235 정의에 따라 아래 인증 헤더 형태를 가져야 함.(Bearer tokenValue)
             response.setHeader(AuthConstants.AUTHORIZATION, "Bearer " + accessToken);

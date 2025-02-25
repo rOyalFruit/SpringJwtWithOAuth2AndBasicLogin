@@ -1,20 +1,16 @@
 package com.ll.backend.global.security.filter;
 
+import com.ll.backend.domain.auth.service.AccessTokenService;
+import com.ll.backend.domain.auth.service.RefreshTokenService;
 import com.ll.backend.global.exception.auth.AuthException;
 import com.ll.backend.global.exception.auth.LogoutException;
-import com.ll.backend.global.exception.auth.token.ExpiredTokenException;
-import com.ll.backend.global.exception.auth.token.InvalidTokenException;
-import com.ll.backend.global.exception.auth.token.TokenNotFoundException;
 import com.ll.backend.global.jwt.AuthConstants;
 import com.ll.backend.global.jwt.JwtUtil;
-import com.ll.backend.domain.auth.service.RefreshTokenService;
 import com.ll.backend.global.util.CookieUtil;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +24,7 @@ import java.io.IOException;
 public class CustomLogoutFilter extends GenericFilterBean {
 
     private final JwtUtil jwtUtil;
+    private final AccessTokenService accessTokenService;
     private final RefreshTokenService refreshTokenService;
 
     @Override
@@ -42,9 +39,14 @@ public class CustomLogoutFilter extends GenericFilterBean {
         }
 
         try {
-            String refreshToken = extractRefreshToken(request);
-            validateRefreshToken(refreshToken);
-            processLogout(refreshToken);
+            String authorizationHeader = request.getHeader(AuthConstants.AUTHORIZATION);
+            String accessToken = jwtUtil.extractAccessToken(authorizationHeader);
+            String refreshToken = jwtUtil.extractRefreshToken(request.getCookies());
+
+            jwtUtil.validateRefreshToken(refreshToken);
+            jwtUtil.validateAccessToken(accessToken);
+
+            processLogout(accessToken, refreshToken);
             response.addCookie(CookieUtil.createExpiredCookie(AuthConstants.REFRESH_TOKEN));
         } catch (AuthException e) {
             request.setAttribute("errorCode", e.getErrorCode());
@@ -59,36 +61,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
         return requestUri.matches("^\\/logout$") && requestMethod.equals("POST");
     }
 
-    private String extractRefreshToken(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        String refreshToken = CookieUtil.extractCookieValue(cookies, AuthConstants.REFRESH_TOKEN);
-
-        if (refreshToken == null) {
-            throw new TokenNotFoundException();
-        }
-
-        return refreshToken;
-    }
-
-    private void validateRefreshToken(String refreshToken) {
+    private void processLogout(String accessToken, String refreshToken) {
         try {
-            jwtUtil.isExpired(refreshToken);
-        } catch (ExpiredJwtException e) {
-            throw new ExpiredTokenException();
-        }
-
-        String category = jwtUtil.getCategory(refreshToken);
-        if (!category.equals(AuthConstants.REFRESH_TOKEN)) {
-            throw new InvalidTokenException();
-        }
-
-        if (!refreshTokenService.existsByRefreshToken(refreshToken)) {
-            throw new InvalidTokenException();
-        }
-    }
-
-    private void processLogout(String refreshToken) {
-        try {
+            accessTokenService.deleteAccessToken(accessToken);
             refreshTokenService.deleteRefreshToken(refreshToken);
         } catch (Exception e) {
             log.error("Refresh 토큰 삭제 중 오류 발생: {}", e.getMessage());
