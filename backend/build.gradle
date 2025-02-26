@@ -48,8 +48,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'jakarta.mail:jakarta.mail-api'
-    implementation 'org.eclipse.angus:jakarta.mail'
+    implementation 'org.eclipse.angus:jakarta.mail:2.0.1'
     implementation 'org.jsoup:jsoup:1.14.3'
+
+    implementation 'org.springframework.boot:spring-boot-starter-integration'
+    implementation 'org.springframework.integration:spring-integration-mail'
 }
 
 tasks.named('test') {
