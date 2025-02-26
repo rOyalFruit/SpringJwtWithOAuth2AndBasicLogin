@@ -118,8 +118,8 @@ public class SecurityConfig {
     // 요청 권한 설정
     private void configureAuthorization(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
         auth
-                .requestMatchers("/", "/login", "/join", "/jwt/**").permitAll() // 모든 사용자에게 허용
-                .requestMatchers("/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // 개발 도구 접근 허용
+                .requestMatchers("/", "/login", "/join/**", "/jwt/**").permitAll() // 모든 사용자에게 허용
+                .requestMatchers("/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**", "/qr/**").permitAll() // 개발 도구 접근 허용
                 .requestMatchers("/admin/**").hasRole("ADMIN") // 관리자 권한 필요
                 .anyRequest().authenticated(); // 그 외 모든 요청은 인증 필요
     }

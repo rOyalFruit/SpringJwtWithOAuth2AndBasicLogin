@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import QrCodePopup from "../components/join/QrCodePopup";
 
 function SignupPage() {
     const [username, setUsername] = useState("");
@@ -8,10 +9,60 @@ function SignupPage() {
     const [nickname, setNickname] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
+    const [qrCodeImage, setQrCodeImage] = useState("");
+    const [showPopup, setShowPopup] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
+    const [timer, setTimer] = useState(600); // 10분 = 600초
     const navigate = useNavigate();
+
+    const isValidPhoneNumber = (number) => {
+        const regex = /^010-\d{4}-\d{4}$/;
+        return regex.test(number);
+    };
+
+    const handlePhoneChange = (e) => {
+        let value = e.target.value;
+        value = value.replace(/[^\d-]/g, '');
+        if (value.length === 3) value += '-';
+        if (value.length === 8) value += '-';
+        value = value.slice(0, 13);
+        setPhone(value);
+    };
+
+    const requestVerification = () => {
+        if (!isValidPhoneNumber(phone)) {
+            alert("올바른 전화번호 형식(010-1234-5678)으로 입력해주세요.");
+            return;
+        }
+
+        fetch(`http://localhost:8080/qr?text=${encodeURIComponent(phone)}`, {
+            method: "GET"
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                } else {
+                    throw new Error("QR 코드 요청 중 오류가 발생했습니다.");
+                }
+            })
+            .then(blob => {
+                const qrCodeUrl = URL.createObjectURL(blob);
+                setQrCodeImage(qrCodeUrl);
+                setShowPopup(true);
+                setTimer(600); // 타이머 초기화
+            })
+            .catch(error => {
+                alert("QR 코드 요청 중 오류가 발생했습니다: " + error.message);
+            });
+    };
 
     const handleSignup = (e) => {
         e.preventDefault();
+
+        if (!isVerified) {
+            alert("전화번호 인증을 완료해주세요.");
+            return;
+        }
 
         const userData = {
             username,
@@ -32,7 +83,7 @@ function SignupPage() {
             .then(response => {
                 if (response.ok) {
                     alert("회원가입이 성공적으로 완료되었습니다.");
-                    navigate('/login'); // 로그인 페이지로 이동
+                    navigate('/login');
                 } else {
                     return response.json().then(data => {
                         throw new Error(data.message || "회원가입 중 오류가 발생했습니다.");
@@ -44,6 +95,18 @@ function SignupPage() {
             });
     };
 
+    useEffect(() => {
+        let interval;
+        if (showPopup && timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prevTimer) => prevTimer - 1);
+            }, 1000);
+        } else if (timer === 0) {
+            setShowPopup(false);
+        }
+        return () => clearInterval(interval);
+    }, [showPopup, timer]);
+
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
             <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
@@ -51,7 +114,7 @@ function SignupPage() {
                 <form className="space-y-4" onSubmit={handleSignup}>
                     <input
                         type="text"
-                        placeholder="아이디"
+                        placeholder="사용자 이름"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-gray-200"
@@ -89,14 +152,23 @@ function SignupPage() {
                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-gray-200"
                         required
                     />
-                    <input
-                        type="text"
-                        placeholder="전화번호"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-gray-200"
-                        required
-                    />
+                    <div className="flex space-x-2">
+                        <input
+                            type="text"
+                            placeholder="전화번호 (010-1234-5678)"
+                            value={phone}
+                            onChange={handlePhoneChange}
+                            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-gray-200"
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={requestVerification}
+                            className="px-4 py-2 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300"
+                        >
+                            인증하기
+                        </button>
+                    </div>
                     <button
                         type="submit"
                         className="w-full bg-gray-200 rounded-lg py-2 text-gray-700 hover:bg-gray-300"
@@ -105,6 +177,13 @@ function SignupPage() {
                     </button>
                 </form>
             </div>
+            {showPopup && (
+                <QrCodePopup
+                    qrCodeImage={qrCodeImage}
+                    timer={timer}
+                    onClose={() => setShowPopup(false)}
+                />
+            )}
         </div>
     );
 }
