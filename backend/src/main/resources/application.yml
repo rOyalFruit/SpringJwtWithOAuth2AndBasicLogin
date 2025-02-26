@@ -67,3 +67,16 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+
+  mail:
+    host: imap.gmail.com
+    port: 993
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        store:
+          protocol: imaps
+        imap:
+          ssl:
+            enable: true
