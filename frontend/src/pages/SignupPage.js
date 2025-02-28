@@ -35,8 +35,16 @@ function SignupPage() {
             return;
         }
 
-        fetch(`http://localhost:8080/qr?text=${encodeURIComponent(phone)}`, {
-            method: "GET"
+        const requestData = {
+            phone: phone
+        };
+
+        fetch("http://localhost:8080/verification/qr", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
         })
             .then(response => {
                 if (response.ok) {
