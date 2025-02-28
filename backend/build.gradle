@@ -45,7 +45,6 @@ dependencies {
     implementation 'com.google.zxing:core:3.5.3'
     implementation 'com.google.zxing:javase:3.5.3'
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'jakarta.mail:jakarta.mail-api'
     implementation 'org.eclipse.angus:jakarta.mail:2.0.1'
