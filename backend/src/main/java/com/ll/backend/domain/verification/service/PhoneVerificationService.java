@@ -1,4 +1,4 @@
-package com.ll.backend.domain.member.service;
+package com.ll.backend.domain.verification.service;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;

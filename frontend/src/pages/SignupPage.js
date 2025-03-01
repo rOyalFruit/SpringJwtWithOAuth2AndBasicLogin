@@ -23,10 +23,15 @@ function SignupPage() {
     const handlePhoneChange = (e) => {
         let value = e.target.value;
         value = value.replace(/[^\d-]/g, '');
-        if (value.length === 3) value += '-';
-        if (value.length === 8) value += '-';
+        if (value.length === 3 && !value.includes('-')) value += '-';
+        if (value.length === 8 && value.split('-').length === 2) value += '-';
         value = value.slice(0, 13);
         setPhone(value);
+
+        // 전화번호가 변경되면 인증 상태 초기화
+        if (isVerified) {
+            setIsVerified(false);
+        }
     };
 
     const requestVerification = () => {
@@ -103,6 +108,17 @@ function SignupPage() {
             });
     };
 
+    // 팝업 닫기 핸들러
+    const handlePopupClose = (verified) => {
+        setShowPopup(false);
+
+        // 인증 상태 업데이트
+        if (verified) {
+            setIsVerified(true);
+            console.log("전화번호 인증 완료:", phone);
+        }
+    };
+
     useEffect(() => {
         let interval;
         if (showPopup && timer > 0) {
@@ -160,23 +176,38 @@ function SignupPage() {
                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-gray-200"
                         required
                     />
-                    <div className="flex space-x-2">
-                        <input
-                            type="text"
-                            placeholder="전화번호 (010-1234-5678)"
-                            value={phone}
-                            onChange={handlePhoneChange}
-                            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-gray-200"
-                            required
-                        />
-                        <button
-                            type="button"
-                            onClick={requestVerification}
-                            className="px-4 py-2 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300"
-                        >
-                            인증하기
-                        </button>
+                    <div className="space-y-2">
+                        <div className="flex space-x-2">
+                            <input
+                                type="text"
+                                placeholder="전화번호 (010-1234-5678)"
+                                value={phone}
+                                onChange={handlePhoneChange}
+                                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-gray-200"
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={requestVerification}
+                                disabled={isVerified}
+                                className={`px-4 py-2 rounded-lg ${
+                                    isVerified
+                                        ? "bg-green-200 text-green-800"
+                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                }`}
+                            >
+                                {isVerified ? "인증완료" : "인증하기"}
+                            </button>
+                        </div>
+
+                        {/* 인증 상태 표시 */}
+                        {isVerified && (
+                            <div className="p-2 bg-green-100 text-green-800 rounded-lg text-sm text-center">
+                                전화번호 인증이 완료되었습니다.
+                            </div>
+                        )}
                     </div>
+
                     <button
                         type="submit"
                         className="w-full bg-gray-200 rounded-lg py-2 text-gray-700 hover:bg-gray-300"
@@ -189,7 +220,8 @@ function SignupPage() {
                 <QrCodePopup
                     qrCodeImage={qrCodeImage}
                     timer={timer}
-                    onClose={() => setShowPopup(false)}
+                    onClose={handlePopupClose}
+                    phoneNumber={phone}
                 />
             )}
         </div>

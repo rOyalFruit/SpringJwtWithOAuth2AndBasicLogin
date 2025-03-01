@@ -75,8 +75,7 @@ public class JwtFilter extends OncePerRequestFilter {
                path.startsWith("/v3/api-docs") ||
                path.startsWith("/h2-console") ||
                path.startsWith("/verification") ||
-               path.startsWith("/receive-emails") ||
-               path.equals("/") ||
+               path.startsWith("/api/verification") ||
                (path.startsWith("/join") && method.equals("POST"));
     }
 }

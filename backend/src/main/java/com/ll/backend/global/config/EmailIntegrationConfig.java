@@ -1,5 +1,6 @@
-package com.ll.backend.global.mail;
+package com.ll.backend.global.config;
 
+import com.ll.backend.domain.verification.service.EmailVerificationService;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -20,7 +21,6 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.mail.ImapIdleChannelAdapter;
 import org.springframework.integration.mail.ImapMailReceiver;
-import org.springframework.integration.mail.SearchTermStrategy;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 
@@ -38,6 +38,7 @@ public class EmailIntegrationConfig {
     private static final Logger logger = LoggerFactory.getLogger(EmailIntegrationConfig.class);
     private final ApplicationContext applicationContext;
     private final Date applicationStartTime = new Date();
+    private final EmailVerificationService emailVerificationService;
 
     @Value("${spring.mail.username}")
     private String username;
@@ -82,6 +83,9 @@ public class EmailIntegrationConfig {
 
                 logger.info("새 메일 수신: 시간 = {}, 발신자 = {}, 제목 = {}", receivedDate, sender, subject);
                 logger.info("메일 내용: {}", content);
+
+                // 이메일 인증 처리
+                emailVerificationService.processEmailVerification(sender);
             } catch (MessagingException e) {
                 logger.error("메일 처리 중 오류 발생", e);
             }
