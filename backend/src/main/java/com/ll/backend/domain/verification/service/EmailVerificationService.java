@@ -41,7 +41,6 @@ public class EmailVerificationService {
     public void processEmailVerification(String senderEmail) {
         // 이메일에서 @ 앞부분 추출
         String emailId = extractEmailId(senderEmail);
-        log.info("이메일 수신 처리: 발신자 ID = {}", emailId);
 
         // Redis에서 해당 키로 저장된 정보 확인
         String redisKey = PHONE_VERIFICATION_PREFIX + emailId;
@@ -58,7 +57,7 @@ public class EmailVerificationService {
             // 인증에 사용된 임시 데이터 삭제
             redisTemplate.delete(redisKey);
         } else {
-            log.warn("인증 실패: 발신자 ID = {} 에 대한 정보 없음", emailId);
+            log.warn("인증 실패: 전화번호 [{}] 에 대한 정보 없음", emailId);
         }
     }
 

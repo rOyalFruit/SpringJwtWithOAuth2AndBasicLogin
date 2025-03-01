@@ -27,7 +27,9 @@ import org.springframework.messaging.MessageChannel;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 @Configuration
@@ -39,6 +41,13 @@ public class EmailIntegrationConfig {
     private final ApplicationContext applicationContext;
     private final Date applicationStartTime = new Date();
     private final EmailVerificationService emailVerificationService;
+
+    // 허용된 도메인 목록
+    private static final List<String> ALLOWED_DOMAINS = Arrays.asList(
+            "vmms.nate.com",
+            "ktfmms.magicn.com",
+            "mmsmail.uplus.co.kr"
+    );
 
     @Value("${spring.mail.username}")
     private String username;
@@ -73,23 +82,39 @@ public class EmailIntegrationConfig {
 
     @ServiceActivator(inputChannel = "emailInChannel")
     public void handleMessage(Message<?> message) {
-        if (message.getPayload() instanceof MimeMessage) {
-            MimeMessage email = (MimeMessage) message.getPayload();
-            try {
-                Date receivedDate = email.getReceivedDate();
-                String subject = email.getSubject();
-                String content = extractContentSafely(email);
-                String sender = extractSenderEmail(email);
-
-                logger.info("새 메일 수신: 시간 = {}, 발신자 = {}, 제목 = {}", receivedDate, sender, subject);
-                logger.info("메일 내용: {}", content);
-
-                // 이메일 인증 처리
-                emailVerificationService.processEmailVerification(sender);
-            } catch (MessagingException e) {
-                logger.error("메일 처리 중 오류 발생", e);
-            }
+        if (!(message.getPayload() instanceof MimeMessage email)) {
+            return;
         }
+
+        try {
+            Date receivedDate = email.getReceivedDate();
+            String subject = email.getSubject();
+            String content = extractContentSafely(email);
+            String sender = extractSenderEmail(email);
+
+            if (isFromAllowedDomain(sender)) {
+                logger.info("\n===== 새 메일 수신 =====\n시간: {}\n발신자: {}\n제목: {}\n메일 내용:\n{}",
+                        receivedDate, sender, subject, content);
+                emailVerificationService.processEmailVerification(sender);
+            }
+        } catch (MessagingException e) {
+            logger.error("메일 처리 중 오류 발생", e);
+        }
+    }
+
+    private boolean isFromAllowedDomain(String emailAddress) {
+        if (emailAddress == null || emailAddress.isEmpty()) {
+            return false;
+        }
+
+        // @ 기호 이후의 도메인 부분 추출
+        int atIndex = emailAddress.lastIndexOf('@');
+        if (atIndex == -1 || atIndex == emailAddress.length() - 1) {
+            return false;
+        }
+
+        String domain = emailAddress.substring(atIndex + 1).toLowerCase();
+        return ALLOWED_DOMAINS.contains(domain);
     }
 
     private String extractSenderEmail(MimeMessage message) throws MessagingException {
